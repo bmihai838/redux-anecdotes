@@ -1,3 +1,4 @@
+import { createSlice } from "@reduxjs/toolkit"
 import { v4 as uuidv4 } from "uuid"
 
 const initialState = [
@@ -9,41 +10,27 @@ const initialState = [
     { id: '6', content: 'Debugging is twice as hard as writing the code in the first place. Therefore, if you write the code as cleverly as possible, you are, by definition, not smart enough to debug it.', votes: 0 }
 ]
 
-export const voteAnecdote = (id) => {
-    return {
-        type: 'VOTE_ANECDOTE',
-        data: { id }
-    }
-}
-
-export const createAnecdote = (content) => {
-    return {
-        type: 'CREATE_ANECDOTE',
-        data: {
-            id: uuidv4(),
-            content,
-            votes: 0
+const anecdoteSlice = createSlice({
+    name: 'anecdotes',
+    initialState,
+    reducers: {
+        voteAnecdote(state, action) {
+            const id = action.payload
+            const anecdoteToChange = state.find(a => a.id === id)
+            if (anecdoteToChange) {
+                anecdoteToChange.votes += 1
+            }
+        },
+        createAnecdote(state, action) {
+            const newAnecdote = {
+                id: uuidv4(),
+                content: action.payload,
+                votes: 0
+            }
+            state.push(newAnecdote)
         }
     }
-}
+})
 
-const anecdoteReducer = (state = initialState, action) => {
-    switch(action.type) {
-        case 'VOTE_ANECDOTE':
-            const id = action.data.id
-            const anecdoteToChange = state.find(a => a.id === id)
-            const changedAnecdote = {
-                ...anecdoteToChange,
-                votes: anecdoteToChange.votes + 1
-            }
-            return state.map(anecdote => 
-                anecdote.id !== id ? anecdote : changedAnecdote
-            )
-        case 'CREATE_ANECDOTE':
-            return [...state, action.data]
-        default:
-            return state
-    }
-}
-
-export default anecdoteReducer 
+export const { voteAnecdote, createAnecdote } = anecdoteSlice.actions
+export default anecdoteSlice.reducer
